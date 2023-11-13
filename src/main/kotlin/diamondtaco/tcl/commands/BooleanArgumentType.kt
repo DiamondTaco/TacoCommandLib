@@ -5,7 +5,7 @@ import com.mojang.brigadier.context.CommandContext
 import diamondtaco.tcl.Either
 import kotlin.Pair
 
-class BooleanArgumentType : ArgumentType<Boolean, Unit> {
+object BooleanArgumentType : ArgumentType<Boolean, Unit> {
     override fun readInput(input: StringReader): Boolean? {
         return when (input.readStringUntil(' ').lowercase()) {
             "true" -> true
