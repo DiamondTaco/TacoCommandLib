@@ -10,13 +10,13 @@ import net.minecraft.command.CommandException
 import net.minecraft.text.Text
 import java.util.concurrent.CompletableFuture
 
-class Argument<T> private constructor(
-    val long: String, val short: Char?,
-    val type: ArgumentType<T, Unit>?,
-) {
-    constructor(long: String) : this(long, null, null)
-    constructor(long: String, short: Char) : this(long, short, null)
-    constructor(long: String, type: ArgumentType<T, Unit>) : this(long, null, type)
-    constructor(long: String, short: Char, type: ArgumentType<T, Unit>) : this(long, short as Char?, type)
-}
+//class Argument<T> private constructor(
+//    val long: String, val short: Char?,
+//    val type: ArgumentType<T, Unit>?,
+//) {
+//    constructor(long: String) : this(long, null, null)
+//    constructor(long: String, short: Char) : this(long, short, null)
+//    constructor(long: String, type: ArgumentType<T, Unit>) : this(long, null, type)
+//    constructor(long: String, short: Char, type: ArgumentType<T, Unit>) : this(long, short as Char?, type)
+//}
 
