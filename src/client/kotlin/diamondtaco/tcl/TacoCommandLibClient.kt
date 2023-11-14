@@ -1,10 +1,11 @@
 package diamondtaco.tcl
 
+import diamondtaco.tcl.lib.MarshalSerializer
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.tree.CommandNode
-import diamondtaco.tcl.commands.BooleanParser
+import diamondtaco.tcl.defualt.BooleanParser
 import diamondtaco.tcl.commands.FlagParser
-import diamondtaco.tcl.commands.MarshalSerializer
+import diamondtaco.tcl.defualt.ItemParser
 import diamondtaco.tcl.commands.StackFlags
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.command.v2.ArgumentTypeRegistry
@@ -28,6 +29,12 @@ object TacoCommandLibClient : ClientModInitializer {
         ArgumentTypeRegistry.registerArgumentType(
             Identifier("tcl", "bool_type"),
             BooleanParser::class.java,
+            MarshalSerializer()
+        )
+
+        ArgumentTypeRegistry.registerArgumentType(
+            Identifier("tcl", "block_type"),
+            ItemParser::class.java,
             MarshalSerializer()
         )
 
@@ -64,7 +71,31 @@ object TacoCommandLibClient : ClientModInitializer {
                 1
             }.build()
 
-        root.addChild(flagsPartA)
+        val blockTest = argument("blab", ItemParser())
+            .executes { context ->
+                val outBlock = runCatching {
+                    context.getArgument("blab", String::class.java)
+                }.getOrElse { it.toString() }
+
+                context.source.sendMessage(Text.literal("Item picked: $outBlock"))
+
+                1
+            }.build()
+
+        val blockTest2 = argument("blab2", ItemParser())
+            .executes { context ->
+                val outBlock = runCatching {
+                    context.getArgument("blab", String::class.java) + " + " + context.getArgument("blab2", String::class.java)
+                }.getOrElse { it.toString() }
+
+                context.source.sendMessage(Text.literal("Item picked: $outBlock"))
+
+                1
+            }.build()
+
+//        root.addChild(flagsPartA)
+        blockTest.addChild(blockTest2)
+        root.addChild(blockTest)
         flagsPartA.addChild(booltest)
 
 

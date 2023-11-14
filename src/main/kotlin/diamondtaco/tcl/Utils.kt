@@ -1,12 +1,13 @@
 package diamondtaco.tcl
 
+import com.mojang.brigadier.StringReader
 
-/**
- * [here](https://medium.com/@Robert_Chrzanow/kotlins-missing-type-either-51602db80fda)
- * */
-sealed class Either<T, U> {
-    class Left<A, B>(val left: A) : Either<A, B>()
-    class Right<A, B>(val right: B) : Either<A, B>()
+
+fun StringReader.readUntil(vararg delimiters: Char): String {
+    val readChars = StringBuilder()
+    do {
+        readChars.append(read())
+    } while (canRead() && peek() !in delimiters)
+    return readChars.toString()
 }
 
-sealed class String
