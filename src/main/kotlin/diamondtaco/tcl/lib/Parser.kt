@@ -25,7 +25,6 @@ interface Parser<T> : Serializable, ArgumentType<T> {
         val completions =
             getCompletions(context!! as CommandContext<ServerCommandSource>, builder!!.input.drop(builder.start))
 
-        println(builder.input)
         val range = StringRange(builder.start, builder.input.length)
 
         return CompletableFuture.completedFuture(Suggestions(range, completions.map { Suggestion(range, it) }))

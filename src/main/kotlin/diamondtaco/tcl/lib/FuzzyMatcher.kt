@@ -1,6 +1,6 @@
 package diamondtaco.tcl.lib
 
-class FuzzyMatcher(private val strings: Set<String>) {
+class FuzzyMatcher(val strings: Set<String>) {
     @Suppress("ControlFlowWithEmptyBody", "NAME_SHADOWING")
     private fun scoreString(input: String, target: String): Double {
         val split = target.split('-', '_', ':')
@@ -31,7 +31,7 @@ class FuzzyMatcher(private val strings: Set<String>) {
 
         while (inputIndex < input.length) {
             val char = input[inputIndex]
-            while (char != (target.getOrNull(targetIndex++) ?: return simpleScore));
+            while (char != (target.getOrNull(targetIndex++) ?: return simpleScore / target.length));
 
             score += indexMap[targetIndex]?.first ?: 1
             inputIndex += 1

@@ -3,10 +3,9 @@ package diamondtaco.tcl
 import diamondtaco.tcl.lib.MarshalSerializer
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.tree.CommandNode
+import diamondtaco.tcl.commands.*
 import diamondtaco.tcl.defualt.BooleanParser
-import diamondtaco.tcl.commands.FlagParser
 import diamondtaco.tcl.defualt.ItemParser
-import diamondtaco.tcl.commands.StackFlags
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.command.v2.ArgumentTypeRegistry
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
@@ -49,54 +48,88 @@ object TacoCommandLibClient : ClientModInitializer {
     }
 
     private fun getCommandNode(dispatcher: CommandDispatcher<ServerCommandSource>): CommandNode<ServerCommandSource> {
+        val argumentSet = ArgumentSet(
+            "abc".map { ArgumentName("long-$it", it) }.toSet() + setOf(ArgumentName("long-g")),
+            "xyz".map { ArgumentName("long-$it", it) }.toSet() + setOf(ArgumentName("long-w")),
+        )
+
         val root = literal("foo").build()
-        val flagsPartA = argument("asdf", FlagParser("abcde".toSet()))
+        val flagsPartA = argument("asdf", BooleanParser())
             .executes { context ->
                 val name = runCatching {
-                    context.getArgument("asdf", StackFlags::class.java).toString()
+                    context.getArgument("asdf", Boolean::class.java).toString()
                 }.getOrElse { it.toString() }
 
                 context.source.sendMessage(Text.literal(name))
                 1
             }.build()
 
-        val booltest = argument("booltest", BooleanParser())
+        val flagsPartB = argument("deez", FlagParser(argumentSet))
             .executes { context ->
-                val boolis = runCatching {
-                    context.getArgument("booltest", Boolean::class.java).toString()
+                val name = runCatching {
+                    context.getArgument("asdf", Boolean::class.java).toString() + context.getArgument(
+                        "deez",
+                        ParsedArgGroup::class.java
+                    ).toString()
                 }.getOrElse { it.toString() }
 
-                context.source.sendMessage(Text.literal(boolis))
-
+                context.source.sendMessage(Text.literal(name))
                 1
             }.build()
 
-        val blockTest = argument("blab", ItemParser())
+        val flagsPartC = argument("deez2", FlagParser(argumentSet))
             .executes { context ->
-                val outBlock = runCatching {
-                    context.getArgument("blab", String::class.java)
+                val name = runCatching {
+                    buildString {
+                        append(context.getArgument("asdf", Boolean::class.java))
+                        append(context.getArgument("deez", ParsedArgGroup::class.java))
+                        append(context.getArgument("deez2", ParsedArgGroup::class.java))
+                    }
                 }.getOrElse { it.toString() }
 
-                context.source.sendMessage(Text.literal("Item picked: $outBlock"))
-
+                context.source.sendMessage(Text.literal(name))
                 1
             }.build()
+//
+//        val booltest = argument("booltest", BooleanParser())
+//            .executes { context ->
+//                val boolis = runCatching {
+//                    context.getArgument("booltest", Boolean::class.java).toString()
+//                }.getOrElse { it.toString() }
+//
+//                context.source.sendMessage(Text.literal(boolis))
+//
+//                1
+//            }.build()
 
-        val blockTest2 = argument("blab2", ItemParser())
-            .executes { context ->
-                val outBlock = runCatching {
-                    context.getArgument("blab", String::class.java) + " + " + context.getArgument("blab2", String::class.java)
-                }.getOrElse { it.toString() }
+//        val blockTest = argument("blab", ItemParser())
+//            .executes { context ->
+//                val outBlock = runCatching {
+//                    context.getArgument("blab", String::class.java)
+//                }.getOrElse { it.toString() }
+//
+//                context.source.sendMessage(Text.literal("Item picked: $outBlock"))
+//
+//                1
+//            }.build()
+//
+//        val blockTest2 = argument("blab2", ItemParser())
+//            .executes { context ->
+//                val outBlock = runCatching {
+//                    context.getArgument("blab", String::class.java) + " + " + context.getArgument("blab2", String::class.java)
+//                }.getOrElse { it.toString() }
+//
+//                context.source.sendMessage(Text.literal("Item picked: $outBlock"))
+//
+//                1
+//            }.build()
 
-                context.source.sendMessage(Text.literal("Item picked: $outBlock"))
-
-                1
-            }.build()
-
-//        root.addChild(flagsPartA)
-        blockTest.addChild(blockTest2)
-        root.addChild(blockTest)
-        flagsPartA.addChild(booltest)
+        flagsPartA.addChild(flagsPartB)
+        flagsPartB.addChild(flagsPartC)
+        root.addChild(flagsPartA)
+//        blockTest.addChild(blockTest2)
+//        root.addChild(blockTest)
+//        flagsPartA.addChild(booltest)
 
 
         val other = literal("balls").redirect(root).build()
