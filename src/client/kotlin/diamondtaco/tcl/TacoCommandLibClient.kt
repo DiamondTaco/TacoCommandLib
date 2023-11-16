@@ -4,6 +4,7 @@ import diamondtaco.tcl.lib.MarshalSerializer
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.tree.CommandNode
 import diamondtaco.tcl.commands.*
+import diamondtaco.tcl.commands.CommandBuilder.Companion.command
 import diamondtaco.tcl.defualt.BooleanParser
 import diamondtaco.tcl.defualt.ItemParser
 import net.fabricmc.api.ClientModInitializer
@@ -37,6 +38,7 @@ object TacoCommandLibClient : ClientModInitializer {
             MarshalSerializer()
         )
 
+        Command
 
 
         CommandRegistrationCallback.EVENT.register(
@@ -47,84 +49,66 @@ object TacoCommandLibClient : ClientModInitializer {
         // This entrypoint is suitable for setting up client-specific logic, such as rendering.
     }
 
-    fun getCommandNode(dispatcher: CommandDispatcher<ServerCommandSource>): CommandNode<ServerCommandSource> {
-        val argumentSet = ArgumentSet(
-            "abc".map { FlagName("long-$it", it) }.toSet() + setOf(FlagName("long-g")),
-            "xyz".map { FlagName("long-$it", it) }.toSet() + setOf(FlagName("long-w")),
-        )
-
-        val root = literal("foo").build()
-
-        val flagGenerator =
-            generateSequence<Pair<CommandNode<ServerCommandSource>, Int>>(Pair(root, 0)) { (_, idx) ->
-                val newNode = argument("flag$idx", FlagParser(argumentSet)).executes { context ->
-                    val name = runCatching {
-                        buildString {
-                            for (i in 0..idx) {
-                                append(context.getArgument("flag$i", ParsedFlag::class.java))
-                                append(", ")
-                            }
-                        }
-                    }.getOrElse { it.toString() }
-
-                    context.source.sendMessage(Text.literal(name))
-                    1
-                }.build()
-
-                newNode to idx + 1
-            }.map { it.first }
-
-        flagGenerator.take(6)
-            .zipWithNext()
-            .onEach(::println)
-            .forEach { (a, b) -> a.addChild(b) }
-//            .fold<_, CommandNode<ServerCommandSource>>(root) { a, b -> b.first.also { a.addChild(it) } }
-
+    fun getCommandNode(dispatcher: CommandDispatcher<ServerCommandSource>) {
+//        val argumentSet = ArgumentSet(
+//            "abc".map { FlagName("long-$it", it) }.toSet() + setOf(FlagName("long-g")),
+//            "xyz".map { FlagName("long-$it", it) }.toSet() + setOf(FlagName("long-w")),
+//        )
 //
-//        val booltest = argument("booltest", BooleanParser())
-//            .executes { context ->
-//                val boolis = runCatching {
-//                    context.getArgument("booltest", Boolean::class.java).toString()
-//                }.getOrElse { it.toString() }
+//        val root = literal("foo").build()
 //
-//                context.source.sendMessage(Text.literal(boolis))
+//        val flagGenerator =
+//            generateSequence<Pair<CommandNode<ServerCommandSource>, Int>>(Pair(root, 0)) { (_, idx) ->
+//                val newNode = argument("flag$idx", FlagParser(argumentSet)).executes { context ->
+//                    val name = runCatching {
+//                        buildString {
+//                            for (i in 0..idx) {
+//                                append(context.getArgument("flag$i", ParsedFlag::class.java))
+//                                append(", ")
+//                            }
+//                        }
+//                    }.getOrElse { it.toString() }
 //
-//                1
-//            }.build()
+//                    context.source.sendMessage(Text.literal(name))
+//                    1
+//                }.build()
+//
+//                newNode to idx + 1
+//            }.map { it.first }
 
-//        val blockTest = argument("blab", ItemParser())
-//            .executes { context ->
-//                val outBlock = runCatching {
-//                    context.getArgument("blab", String::class.java)
-//                }.getOrElse { it.toString() }
-//
-//                context.source.sendMessage(Text.literal("Item picked: $outBlock"))
-//
-//                1
-//            }.build()
-//
-//        val blockTest2 = argument("blab2", ItemParser())
-//            .executes { context ->
-//                val outBlock = runCatching {
-//                    context.getArgument("blab", String::class.java) + " + " + context.getArgument("blab2", String::class.java)
-//                }.getOrElse { it.toString() }
-//
-//                context.source.sendMessage(Text.literal("Item picked: $outBlock"))
-//
-//                1
-//            }.build()
+        val command = command("foo") {
+            for (c in "abc") addToggle("long-$c", c)
+            addToggle("long-g")
 
-//        blockTest.addChild(blockTest2)
-//        root.addChild(blockTest)
-//        flagsPartA.addChild(booltest)
+            for (c in "xyz") addArgument("long-$c", c, BooleanParser())
+            addArgument("long-w", BooleanParser())
 
+            executes {
+                Result.success(
+                    buildString {
+                        append("Toggles: ")
+                        append(getToggle('a'))
+                        append(',')
+                        append(getToggle('b'))
+                        append(',')
+                        append(getToggle('c'))
+                        append(',')
+                        append(getToggle("long-g"))
 
-        val other = literal("balls").redirect(root).build()
+                        append("; Args: ")
+                        append(getArgument('x').getOrElse { return@executes Result.failure(it) })
+                        append(',')
+                        append(getArgument('y').getOrElse { "default y" })
+                        append(',')
+                        append(getArgument('z').getOrElse { "default z" })
+                        append(',')
+                        append(getArgument("long-w").getOrElse { return@executes Result.failure(it) })
+                    }
+                )
+            }
+        }.toBrigadierNode()
 
-        dispatcher.root.addChild(root)
-        dispatcher.root.addChild(other)
-
-        return root
+        dispatcher.root.addChild(command)
     }
 
 

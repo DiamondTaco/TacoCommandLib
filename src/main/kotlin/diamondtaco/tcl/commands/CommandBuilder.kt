@@ -10,13 +10,12 @@ val fooCommand = command("foo") {
     addArgument("long-b", 'b', BooleanParser())
 
 
-    executes { flagSet ->
-        if (flagSet.getToggle('a')) {
+    executes {
+        if (getToggle('a')) {
             println("a toggled")
         }
 
-        val y = flagSet
-            .getArgument("long-b")
+        val y = getArgument("long-b")
             .getOrElse { return@executes Result.failure(it) }
                 as Boolean
 
@@ -46,7 +45,7 @@ class CommandBuilder private constructor(private val name: String) {
     fun addArgument(long: String, parser: Parser<*>) = args.add(Argument(FlagName(long), parser))
     fun addArgument(long: String, short: Char, parser: Parser<*>) = args.add(Argument(FlagName(long, short), parser))
 
-    fun executes(executor: (FlagSet<*>) -> Result<String>) {
+    fun executes(executor: FlagSet<*>.() -> Result<String>) {
         if (this.executor == null) {
             this.executor = executor
         } else {
@@ -55,6 +54,6 @@ class CommandBuilder private constructor(private val name: String) {
     }
 
     private fun build(): Command = runCatching {
-        Command(name, FlagMap.fromFlagSet(FlagSet(toggles, args)), executor!!)
-    }.getOrElse { throw Exception("Exception encountered") }
+        Command(name, FlagSet(toggles, args), executor!!)
+    }.getOrThrow()
 }

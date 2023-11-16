@@ -1,8 +1,5 @@
 package diamondtaco.tcl.commands
 
-class MetaParser {
-
-}
 //data class WrappedObject(val obj: Any?, val clazz: Class<*>)
 //
 //

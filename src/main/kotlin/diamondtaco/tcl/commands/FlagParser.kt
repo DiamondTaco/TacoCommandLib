@@ -46,10 +46,12 @@ class FlagParser<T>(flagSpec: FlagSet<T>) : Parser<ParsedFlag> {
     override fun getCompletions(context: CommandContext<ServerCommandSource>, input: String): List<String> {
         return when {
             input.startsWith("--") -> matcher.getMatches(input.drop(2))
-                .map { if (it in longFlags) "--$it" else "--$it=" }
+                .map { "--$it" }
+//                .map { if (it in longFlags) "--$it" else "--$it=" }
 
             input.startsWith("-") -> listOf("--") + (shortFlags + shortArgs).filterNot { it in input }
-                .map { if (it in shortFlags) "$input$it" else "$input$it=" }
+                .map { "$input$it" }
+//                .map { if (it in shortFlags) "$input$it" else "$input$it=" }
 
             else -> emptyList()
         }
@@ -62,6 +64,6 @@ class FlagParser<T>(flagSpec: FlagSet<T>) : Parser<ParsedFlag> {
 
     companion object {
         @Suppress("SpellCheckingInspection")
-        const val ALLOWED_CHARACTERS = "abcdefghijklmnopqrstuvABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-"
+        const val ALLOWED_CHARACTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-"
     }
 }
