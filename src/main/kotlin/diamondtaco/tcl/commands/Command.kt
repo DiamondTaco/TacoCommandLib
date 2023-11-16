@@ -30,9 +30,6 @@ class Command(
     }
 
     private val parserAmount = inputFlagSet.toggles.size + inputFlagSet.args.size * 2
-    private val states = (0..parserAmount).map { null }.toMutableList<State?>()
-
-    private val outputFlagSet = FlagSet<Any>(mutableSetOf(), mutableSetOf())
 
     private interface State {
         data class Flag(val flagSet: FlagSet<Parser<*>>) : State

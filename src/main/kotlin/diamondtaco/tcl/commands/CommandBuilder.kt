@@ -4,7 +4,7 @@ import diamondtaco.tcl.commands.CommandBuilder.Companion.command
 import diamondtaco.tcl.defualt.BooleanParser
 import diamondtaco.tcl.lib.Parser
 
-
+@Api
 val fooCommand = command("foo") {
     addToggle("long-a", 'a')
     addArgument("long-b", 'b', BooleanParser())
