@@ -2,6 +2,7 @@ package diamondtaco.tcl
 
 import diamondtaco.tcl.lib.MarshalSerializer
 import com.mojang.brigadier.CommandDispatcher
+import com.mojang.brigadier.arguments.IntegerArgumentType.integer
 import com.mojang.brigadier.tree.CommandNode
 import diamondtaco.tcl.commands.*
 import diamondtaco.tcl.defualt.BooleanParser
@@ -47,49 +48,39 @@ object TacoCommandLibClient : ClientModInitializer {
         // This entrypoint is suitable for setting up client-specific logic, such as rendering.
     }
 
-    private fun getCommandNode(dispatcher: CommandDispatcher<ServerCommandSource>): CommandNode<ServerCommandSource> {
+    fun getCommandNode(dispatcher: CommandDispatcher<ServerCommandSource>): CommandNode<ServerCommandSource> {
         val argumentSet = ArgumentSet(
             "abc".map { ArgumentName("long-$it", it) }.toSet() + setOf(ArgumentName("long-g")),
             "xyz".map { ArgumentName("long-$it", it) }.toSet() + setOf(ArgumentName("long-w")),
         )
 
         val root = literal("foo").build()
-        val flagsPartA = argument("asdf", BooleanParser())
-            .executes { context ->
-                val name = runCatching {
-                    context.getArgument("asdf", Boolean::class.java).toString()
-                }.getOrElse { it.toString() }
 
-                context.source.sendMessage(Text.literal(name))
-                1
-            }.build()
+        val flagGenerator =
+            generateSequence<Pair<CommandNode<ServerCommandSource>, Int>>(Pair(root, 0)) { (_, idx) ->
+                val newNode = argument("flag$idx", FlagParser(argumentSet)).executes { context ->
+                    val name = runCatching {
+                        buildString {
+                            for (i in 0..idx) {
+                                append(context.getArgument("flag$i", ParsedArgGroup::class.java))
+                                append(", ")
+                            }
+                        }
+                    }.getOrElse { it.toString() }
 
-        val flagsPartB = argument("deez", FlagParser(argumentSet))
-            .executes { context ->
-                val name = runCatching {
-                    context.getArgument("asdf", Boolean::class.java).toString() + context.getArgument(
-                        "deez",
-                        ParsedArgGroup::class.java
-                    ).toString()
-                }.getOrElse { it.toString() }
+                    context.source.sendMessage(Text.literal(name))
+                    1
+                }.build()
 
-                context.source.sendMessage(Text.literal(name))
-                1
-            }.build()
+                newNode to idx + 1
+            }.map { it.first }
 
-        val flagsPartC = argument("deez2", FlagParser(argumentSet))
-            .executes { context ->
-                val name = runCatching {
-                    buildString {
-                        append(context.getArgument("asdf", Boolean::class.java))
-                        append(context.getArgument("deez", ParsedArgGroup::class.java))
-                        append(context.getArgument("deez2", ParsedArgGroup::class.java))
-                    }
-                }.getOrElse { it.toString() }
+        flagGenerator.take(6)
+            .zipWithNext()
+            .onEach(::println)
+            .forEach { (a, b) -> a.addChild(b) }
+//            .fold<_, CommandNode<ServerCommandSource>>(root) { a, b -> b.first.also { a.addChild(it) } }
 
-                context.source.sendMessage(Text.literal(name))
-                1
-            }.build()
 //
 //        val booltest = argument("booltest", BooleanParser())
 //            .executes { context ->
@@ -124,9 +115,6 @@ object TacoCommandLibClient : ClientModInitializer {
 //                1
 //            }.build()
 
-        flagsPartA.addChild(flagsPartB)
-        flagsPartB.addChild(flagsPartC)
-        root.addChild(flagsPartA)
 //        blockTest.addChild(blockTest2)
 //        root.addChild(blockTest)
 //        flagsPartA.addChild(booltest)

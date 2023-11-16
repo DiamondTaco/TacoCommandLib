@@ -21,11 +21,11 @@ class Command(val arguments: List<Argument<*>>) {
     }.sum()
 
     private val parsers = (0..parserAmount).map { MetaParser(it) }
-    private val states = generateSequence { State.Unreached }.take(parserAmount).toList<State>()
+    private val states = generateSequence { State.Unreached }.take(parserAmount).toMutableList<State>()
 
     private sealed interface State {
         data class Flag(val argumentSet: ArgumentSet) : State
-        data class Argument(val parser: Parser<Any>) : State
+        data class Argument(val parser: Parser<*>) : State
         data object Unreached : State
     }
 
@@ -38,22 +38,31 @@ class Command(val arguments: List<Argument<*>>) {
     val flagParser = arguments.partition { it.type == null }
         .run { FlagParser(ArgumentSet(first.map { it.name }.toSet(), second.map { it.name }.toSet())) }
 
+    // Brigadier does a full command reparse every time an earlier argument is changed, so we are safe to do this.
     inner class MetaParser(private val idx: Int) : ArgumentType<Any> {
         override fun parse(reader: StringReader?): Any {
             reader!!
             return when (val state = states[idx]) {
-                is State.Flag -> {
-                    flagParser.flagSpec = state.argumentSet
-                    val group = flagParser.parseReader(reader)
-                    when (group) {
-                        is LongArg -> ""
-                        is LongFlag -> ""
-                        is ShortFlagArg -> ""
-                        is ShortFlags -> ""
+                is State.Flag -> state.run {
+                    flagParser.flagSpec = argumentSet
+                    when (val flag = flagParser.parseReader(reader)) {
+                        is ShortFlags -> {
+                            states[idx + 1] = State.Flag(argumentSet.without(flag.flags))
+                        }
+                        is LongFlag -> {
+                            states[idx + 1] = State.Flag(argumentSet.without(flag.flag))
+                        }
+                        is LongArg -> {
+                            states[idx + 1] = State.Argument(arguments.first { it.name.long == flag.arg }.type!!)
+                            states[idx + 2] = State.Flag(argumentSet.without(flag.arg))
+                        }
+                        is ShortFlagArg -> {
+                            states[idx + 1] = State.Argument(arguments.first { it.name.short == flag.arg }.type!!)
+                            states[idx + 2] = State.Flag(argumentSet.without(flag.flags))
+                        }
                     }
-                    flagParser.flagSpec.flags
                 }
-                is State.Argument -> state.parser.parseReader(reader)
+                is State.Argument -> state.parser.parseReader(reader)!!
                 State.Unreached -> "Raise an error"
             }
         }

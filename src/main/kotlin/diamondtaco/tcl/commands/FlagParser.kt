@@ -14,6 +14,9 @@ data class StackFlags(val flags: Set<Char>)
 
 
 class FlagParser(var flagSpec: ArgumentSet) : Parser<ParsedArgGroup> {
+
+
+
     private val longFlags = flagSpec.flags.map { it.long }.toSet()
     private val longArgs = flagSpec.args.map { it.long }.toSet()
 
@@ -58,5 +61,10 @@ class FlagParser(var flagSpec: ArgumentSet) : Parser<ParsedArgGroup> {
 
             else -> emptyList()
         }
+    }
+
+    override fun toString(): String {
+//        return "FlagParser(flagSpec=$flagSpec)"
+        return "FlagParser"
     }
 }
