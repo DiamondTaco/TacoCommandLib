@@ -3,38 +3,15 @@ package diamondtaco.tcl
 import com.mojang.brigadier.CommandDispatcher
 import diamondtaco.tcl.commands.Command
 import diamondtaco.tcl.commands.CommandBuilder.Companion.command
-import diamondtaco.tcl.commands.FlagParser
 import diamondtaco.tcl.defualt.BooleanParser
-import diamondtaco.tcl.defualt.ItemParser
-import diamondtaco.tcl.lib.MarshalSerializer
 import net.fabricmc.api.ClientModInitializer
-import net.fabricmc.fabric.api.command.v2.ArgumentTypeRegistry
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.minecraft.server.command.ServerCommandSource
-import net.minecraft.util.Identifier
 
 
 object TacoCommandLibClient : ClientModInitializer {
 
     override fun onInitializeClient() {
-        ArgumentTypeRegistry.registerArgumentType(
-            Identifier("tcl", "flag_type"),
-            FlagParser::class.java,
-            MarshalSerializer()
-        )
-
-        ArgumentTypeRegistry.registerArgumentType(
-            Identifier("tcl", "bool_type"),
-            BooleanParser::class.java,
-            MarshalSerializer()
-        )
-
-        ArgumentTypeRegistry.registerArgumentType(
-            Identifier("tcl", "block_type"),
-            ItemParser::class.java,
-            MarshalSerializer()
-        )
-
         Command
 
 
