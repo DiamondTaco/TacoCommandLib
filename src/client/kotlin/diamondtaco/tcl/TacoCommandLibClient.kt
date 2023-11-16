@@ -2,7 +2,6 @@ package diamondtaco.tcl
 
 import diamondtaco.tcl.lib.MarshalSerializer
 import com.mojang.brigadier.CommandDispatcher
-import com.mojang.brigadier.arguments.IntegerArgumentType.integer
 import com.mojang.brigadier.tree.CommandNode
 import diamondtaco.tcl.commands.*
 import diamondtaco.tcl.defualt.BooleanParser
@@ -50,8 +49,8 @@ object TacoCommandLibClient : ClientModInitializer {
 
     fun getCommandNode(dispatcher: CommandDispatcher<ServerCommandSource>): CommandNode<ServerCommandSource> {
         val argumentSet = ArgumentSet(
-            "abc".map { ArgumentName("long-$it", it) }.toSet() + setOf(ArgumentName("long-g")),
-            "xyz".map { ArgumentName("long-$it", it) }.toSet() + setOf(ArgumentName("long-w")),
+            "abc".map { FlagName("long-$it", it) }.toSet() + setOf(FlagName("long-g")),
+            "xyz".map { FlagName("long-$it", it) }.toSet() + setOf(FlagName("long-w")),
         )
 
         val root = literal("foo").build()
@@ -62,7 +61,7 @@ object TacoCommandLibClient : ClientModInitializer {
                     val name = runCatching {
                         buildString {
                             for (i in 0..idx) {
-                                append(context.getArgument("flag$i", ParsedArgGroup::class.java))
+                                append(context.getArgument("flag$i", ParsedFlag::class.java))
                                 append(", ")
                             }
                         }

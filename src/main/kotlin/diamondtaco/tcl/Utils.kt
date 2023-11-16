@@ -3,11 +3,11 @@ package diamondtaco.tcl
 import com.mojang.brigadier.StringReader
 
 
-fun StringReader.readUntil(vararg delimiters: Char): String {
+fun StringReader.readWhile(vararg allowed: Char): String {
     val readChars = StringBuilder()
     do {
         readChars.append(read())
-    } while (canRead() && peek() !in delimiters)
+    } while (canRead() && peek() in allowed)
     return readChars.toString()
 }
 

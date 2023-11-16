@@ -4,35 +4,27 @@ import com.mojang.brigadier.StringReader
 import com.mojang.brigadier.context.CommandContext
 import diamondtaco.tcl.lib.FuzzyMatcher
 import diamondtaco.tcl.lib.Parser
-import diamondtaco.tcl.readUntil
+import diamondtaco.tcl.readWhile
 import net.minecraft.command.CommandException
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.text.Text
 
 
-data class StackFlags(val flags: Set<Char>)
+class FlagParser<T>(flagSpec: FlagSet<T>) : Parser<ParsedFlag> {
+    private val longFlags: Set<String> = flagSpec.toggles.map { it.id.long }.toSet()
+    private val longArgs: Set<String> = flagSpec.args.map { it.id.long }.toSet()
 
-
-class FlagParser(var flagSpec: ArgumentSet) : Parser<ParsedArgGroup> {
-
-
-
-    private val longFlags = flagSpec.flags.map { it.long }.toSet()
-    private val longArgs = flagSpec.args.map { it.long }.toSet()
-
-    private val shortFlags = flagSpec.flags.mapNotNull { it.short }.toSet()
-    private val shortArgs = flagSpec.args.mapNotNull { it.short }.toSet()
+    private val shortFlags: Set<Char> = flagSpec.toggles.mapNotNull { it.id.short }.toSet()
+    private val shortArgs: Set<Char> = flagSpec.args.mapNotNull { it.id.short }.toSet()
 
     private val matcher = FuzzyMatcher(longFlags + longArgs)
-    override fun parseReader(reader: StringReader): ParsedArgGroup {
-        val input = reader.readUntil(' ', '=')
-
-        println("Parsing...")
+    override fun parseReader(reader: StringReader): ParsedFlag {
+        val input = reader.readWhile(*ALLOWED_CHARACTERS.toCharArray())
 
         if (input.startsWith("--")) {
             return when (val long = input.drop(2)) {
-                in longFlags -> LongFlag(long)
-                in longArgs -> LongArg(long)
+                in longFlags -> ParsedFlag.LongToggle(long)
+                in longArgs -> ParsedFlag.LongArg(long)
                 else -> throw CommandException(Text.literal("Unrecognized long identifier."))
             }
         } else if (input.startsWith("-")) {
@@ -43,8 +35,8 @@ class FlagParser(var flagSpec: ArgumentSet) : Parser<ParsedArgGroup> {
                 input.length - 1 != shorts.size -> throw CommandException(Text.literal("Can't have repeated flags."))
                 shorts.any { it !in shortFlags + shortArgs } -> throw CommandException(Text.literal("Unrecognized flag."))
 
-                shorts.last() in shortArgs -> ShortFlagArg(shorts.dropLast(1).toSet(), shorts.last())
-                else -> ShortFlags(shorts.toSet())
+                shorts.last() in shortArgs -> ParsedFlag.ShortTogglesArg(shorts.dropLast(1).toSet(), shorts.last())
+                else -> ParsedFlag.ShortToggles(shorts.toSet())
             }
         } else {
             throw CommandException(Text.literal(""))
@@ -66,5 +58,10 @@ class FlagParser(var flagSpec: ArgumentSet) : Parser<ParsedArgGroup> {
     override fun toString(): String {
 //        return "FlagParser(flagSpec=$flagSpec)"
         return "FlagParser"
+    }
+
+    companion object {
+        @Suppress("SpellCheckingInspection")
+        const val ALLOWED_CHARACTERS = "abcdefghijklmnopqrstuvABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-"
     }
 }

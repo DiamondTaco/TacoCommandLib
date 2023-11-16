@@ -1,6 +1,5 @@
 package diamondtaco.tcl.commands
 
-import com.mojang.datafixers.util.Either
 import diamondtaco.tcl.lib.Parser
 
 
@@ -11,37 +10,35 @@ import diamondtaco.tcl.lib.Parser
  * - Arguments accept data as an input.
  */
 class FlagMap<T> private constructor(
-    private val shortToggleSet: Map<Char, String>,
-    private val longToggleSet: Map<String, Char?>,
-    private val shortArgumentSet: Map<Char, Pair<String, T>>,
-    private val longArgumentSet: Map<String, Pair<Char?, T>>,
+    @Api internal val shortToggleSet: Map<Char, String>,
+    @Api internal val longToggleSet: Map<String, Char?>,
+    @Api internal val shortArgumentSet: Map<Char, Pair<String, T>>,
+    @Api internal val longArgumentSet: Map<String, Pair<Char?, T>>,
 ) {
     companion object {
-        fun fromArguments(arguments: Set<Argument<*>>): FlagMap<Parser<*>> {
-            val (toggles, args) = arguments.partition { it.type == null }
-
-            val longToggles = toggles.associate { it.name.long to it.name.short }
-            val shortToggles = toggles.filterNot { it.name.short == null }.associate { it.name.short!! to it.name.long }
-
-            val longArgs = args.associate { it.name.long to Pair(it.name.short, it.type!!) }
-            val shortArgs = args.filterNot { it.name.short == null }.associate { it.name.short!! to Pair(it.name.long, it.type!!) }
-
-            return FlagMap(shortToggles, longToggles, shortArgs, longArgs)
+        @Api
+        fun <T> fromFlagSet(set: FlagSet<T>) = set.run {
+            FlagMap(
+                toggles.filter { it.id.short != null }.associate { it.id.short!! to it.id.long },
+                toggles.associate { it.id.long to it.id.short },
+                args.filter { it.id.short != null }.associate { it.id.short!! to Pair(it.id.long, it.value!!) },
+                args.associate { it.id.long to Pair(it.id.short, it.value!!) },
+            )
         }
     }
 
-    fun getFlag(long: String): Pair<ArgumentName, T?>? {
+    fun getFlag(long: String): Pair<FlagName, T?>? {
         return when (long) {
-            in longToggleSet -> ArgumentName(long, longToggleSet[long]) to null
-            in longArgumentSet -> ArgumentName(long, longArgumentSet[long]!!.first) to longArgumentSet[long]!!.second
+            in longToggleSet -> FlagName(long, longToggleSet[long]) to null
+            in longArgumentSet -> FlagName(long, longArgumentSet[long]!!.first) to longArgumentSet[long]!!.second
             else -> null
         }
     }
 
-    fun getFlag(short: Char): Pair<ArgumentName, T?>? {
+    fun getFlag(short: Char): Pair<FlagName, T?>? {
         return when (short) {
-            in shortToggleSet -> ArgumentName(shortToggleSet[short]!!, short) to null
-            in shortArgumentSet -> ArgumentName(shortArgumentSet[short]!!.first, short) to shortArgumentSet[short]!!.second
+            in shortToggleSet -> FlagName(shortToggleSet[short]!!, short) to null
+            in shortArgumentSet -> FlagName(shortArgumentSet[short]!!.first, short) to shortArgumentSet[short]!!.second
             else -> null
         }
     }

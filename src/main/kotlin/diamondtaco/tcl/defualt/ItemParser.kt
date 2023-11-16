@@ -4,7 +4,7 @@ import com.mojang.brigadier.StringReader
 import com.mojang.brigadier.context.CommandContext
 import diamondtaco.tcl.lib.FuzzyMatcher
 import diamondtaco.tcl.lib.Parser
-import diamondtaco.tcl.readUntil
+import diamondtaco.tcl.readWhile
 import net.minecraft.registry.Registries
 import net.minecraft.server.command.ServerCommandSource
 
@@ -26,7 +26,7 @@ class ItemParser : Parser<String> {
     private val matcher = FuzzyMatcher(strings)
 
     override fun parseReader(reader: StringReader): String {
-        return reader.readUntil(' ').takeIf { it in strings }!!
+        return reader.readWhile(' ').takeIf { it in strings }!!
     }
 
     override fun getCompletions(context: CommandContext<ServerCommandSource>, input: String): List<String> {
