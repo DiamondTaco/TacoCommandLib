@@ -34,8 +34,11 @@ class FlagParser<T>(flagSpec: FlagSet<T>) : Parser<ParsedFlag> {
                 shorts.isEmpty() -> throw CommandException(Text.literal(""))
                 input.length - 1 != shorts.size -> throw CommandException(Text.literal("Can't have repeated flags."))
                 shorts.any { it !in shortFlags + shortArgs } -> throw CommandException(Text.literal("Unrecognized flag."))
+                (shortArgs intersect shorts.dropLast(1).toSet()).isNotEmpty() ->
+                    throw CommandException(Text.literal("Can't have args with flags behind them."))
 
                 shorts.last() in shortArgs -> ParsedFlag.ShortTogglesArg(shorts.dropLast(1).toSet(), shorts.last())
+
                 else -> ParsedFlag.ShortToggles(shorts.toSet())
             }
         } else {
@@ -45,20 +48,19 @@ class FlagParser<T>(flagSpec: FlagSet<T>) : Parser<ParsedFlag> {
 
     override fun getCompletions(context: CommandContext<ServerCommandSource>, input: String): List<String> {
         return when {
-            input.startsWith("--") -> matcher.getMatches(input.drop(2))
-                .map { "--$it" }
-//                .map { if (it in longFlags) "--$it" else "--$it=" }
+            input.startsWith("--") -> matcher.getMatches(input.drop(2)).map { "--$it" }
 
-            input.startsWith("-") -> listOf("--") + (shortFlags + shortArgs).filterNot { it in input }
-                .map { "$input$it" }
-//                .map { if (it in shortFlags) "$input$it" else "$input$it=" }
+            input.startsWith("-") ->
+                if ((shortArgs intersect input.toSet()).isNotEmpty()) emptyList()
+                else listOf("--") + (shortFlags + shortArgs)
+                    .filterNot { it in input }
+                    .map { "$input$it" }
 
             else -> emptyList()
         }
     }
 
     override fun toString(): String {
-//        return "FlagParser(flagSpec=$flagSpec)"
         return "FlagParser"
     }
 
