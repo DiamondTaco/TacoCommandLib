@@ -3,6 +3,7 @@ package diamondtaco.tcl.commands
 import diamondtaco.tcl.commands.CommandBuilder.Companion.command
 import diamondtaco.tcl.defualt.BooleanParser
 import diamondtaco.tcl.lib.Parser
+import net.minecraft.server.command.ServerCommandSource
 
 @Api
 val fooCommand = command("foo") {
@@ -37,15 +38,22 @@ class CommandBuilder private constructor(private val name: String) {
 
     private val toggles = mutableSetOf<Toggle>()
     private val args = mutableSetOf<Argument<Parser<*>>>()
-    private var executor: ((FlagSet<*>) -> Result<String>)? = null
+    private var executor: ((FlagSet<*>, ServerCommandSource) -> Result<String>)? = null
 
+    @Api
     fun addToggle(long: String) = toggles.add(Toggle(FlagName(long)))
+
+    @Api
     fun addToggle(long: String, short: Char) = toggles.add(Toggle(FlagName(long, short)))
 
+    @Api
     fun addArgument(long: String, parser: Parser<*>) = args.add(Argument(FlagName(long), parser))
+
+    @Api
     fun addArgument(long: String, short: Char, parser: Parser<*>) = args.add(Argument(FlagName(long, short), parser))
 
-    fun executes(executor: FlagSet<*>.() -> Result<String>) {
+    @Api
+    fun executes(executor: FlagSet<*>.(ServerCommandSource) -> Result<String>) {
         if (this.executor == null) {
             this.executor = executor
         } else {
@@ -53,7 +61,5 @@ class CommandBuilder private constructor(private val name: String) {
         }
     }
 
-    private fun build(): Command = runCatching {
-        Command(name, FlagSet(toggles, args), executor!!)
-    }.getOrThrow()
+    private fun build(): Command = Command(name, FlagSet(toggles, args), executor!!)
 }

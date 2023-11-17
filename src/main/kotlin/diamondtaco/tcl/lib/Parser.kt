@@ -11,6 +11,17 @@ import net.minecraft.server.command.ServerCommandSource
 import java.io.Serializable
 import java.util.concurrent.CompletableFuture
 
+fun <T> ArgumentType<T>.toParser(): Parser<T> = let {
+    object : Parser<T> {
+        override fun parseReader(reader: StringReader): T = it.parse(reader)
+
+        override fun getCompletions(context: CommandContext<ServerCommandSource>, input: String): List<String> {
+            return it.listSuggestions(context, SuggestionsBuilder(input, 0))!!.get().list.map { it.text }
+        }
+    }
+}
+
+
 interface Parser<T> : Serializable, ArgumentType<T> {
     fun parseReader(reader: StringReader): T
     fun getCompletions(context: CommandContext<ServerCommandSource>, input: String): List<String>

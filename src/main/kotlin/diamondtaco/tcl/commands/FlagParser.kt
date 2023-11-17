@@ -32,7 +32,7 @@ class FlagParser<T>(flagSpec: FlagSet<T>) : Parser<ParsedFlag> {
 
             return when {
                 shorts.isEmpty() -> throw CommandException(Text.literal(""))
-                input.length - 1 != shorts.size -> throw CommandException(Text.literal("Can't have repeated flags."))
+                input.length - 1 != shorts.toSet().size -> throw CommandException(Text.literal("Can't have repeated flags."))
                 shorts.any { it !in shortFlags + shortArgs } -> throw CommandException(Text.literal("Unrecognized flag."))
                 (shortArgs intersect shorts.dropLast(1).toSet()).isNotEmpty() ->
                     throw CommandException(Text.literal("Can't have args with flags behind them."))

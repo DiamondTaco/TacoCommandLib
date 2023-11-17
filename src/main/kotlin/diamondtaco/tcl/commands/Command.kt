@@ -17,7 +17,7 @@ import net.minecraft.util.Identifier
 class Command(
     val name: String,
     val inputFlagSet: FlagSet<Parser<*>>,
-    val callback: (FlagSet<*>) -> Result<String>,
+    val callback: (FlagSet<*>, ServerCommandSource) -> Result<String>,
 ) {
     companion object {
         init {
@@ -37,7 +37,18 @@ class Command(
     }
 
     fun toBrigadierNode(): CommandNode<ServerCommandSource> {
-        val root = literal(name).build()
+        val root = literal(name).executes { context ->
+            val output = callback(FlagSet<Nothing>(emptySet(), emptySet()), context.source)
+
+            context.source.sendMessage(output.fold(
+                { success -> Text.literal(success) },
+                { failure ->
+                    Text.literal(failure.localizedMessage).setStyle(Style.EMPTY.withColor(Formatting.RED))
+                }
+            ))
+
+            if (output.isSuccess) 1 else -1
+        }.build()
 
         val subNodes = generateSequence(MetaParser(null) to 0) { (parser, idx) -> MetaParser(parser) to idx + 1 }
             .take(parserAmount)
@@ -49,15 +60,14 @@ class Command(
             .mapIndexed { idx, parser -> argument("Arg$idx", parser) }
             .onEach {
                 it.executes { context ->
-                    val output = callback(context.toMutableFlagSet(parserAmount))
+                    val output = callback(context.toMutableFlagSet(parserAmount), context.source)
 
-                    context.source.sendMessage(output.fold(
-                        { success -> Text.literal(success) },
-                        { failure -> Text.literal(failure.localizedMessage).setStyle(Style.EMPTY.withColor(Formatting.RED)) }
-                    ))
+                    output.fold(
+                        { success -> context.source.sendMessage(Text.literal(success)) },
+                        { failure -> context.source.sendError(Text.literal(failure.localizedMessage)) }
+                    )
 
-                    1
-//                if (callback(context.toMutableFlagSet(parserAmount)).isFailure) 0 else 1
+                    if (output.isSuccess) 1 else 0
                 }
             }
             .map { it.build() }
