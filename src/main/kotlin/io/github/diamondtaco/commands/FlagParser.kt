@@ -1,16 +1,16 @@
-package diamondtaco.tcl.commands
+package io.github.diamondtaco.commands
 
 import com.mojang.brigadier.StringReader
 import com.mojang.brigadier.context.CommandContext
-import diamondtaco.tcl.lib.FuzzyMatcher
-import diamondtaco.tcl.lib.Parser
-import diamondtaco.tcl.readWhile
+import io.github.diamondtaco.lib.FuzzyMatcher
+import io.github.diamondtaco.lib.Parser
+import io.github.diamondtaco.readWhile
 import net.minecraft.command.CommandException
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.text.Text
 
 
-class FlagParser<T>(flagSpec: FlagSet<T>) : Parser<ParsedFlag> {
+internal class FlagParser<T>(flagSpec: FlagSet<T>) : Parser<ParsedFlag> {
     private val longFlags: Set<String> = flagSpec.toggles.map { it.id.long }.toSet()
     private val longArgs: Set<String> = flagSpec.args.map { it.id.long }.toSet()
 

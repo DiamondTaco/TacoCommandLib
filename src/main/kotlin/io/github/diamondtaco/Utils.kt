@@ -1,4 +1,4 @@
-package diamondtaco.tcl
+package io.github.diamondtaco
 
 import com.mojang.brigadier.StringReader
 

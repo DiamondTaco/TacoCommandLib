@@ -1,10 +1,10 @@
-package diamondtaco.tcl.defualt
+package io.github.diamondtaco.defualt
 
 import com.mojang.brigadier.StringReader
 import com.mojang.brigadier.context.CommandContext
-import diamondtaco.tcl.lib.FuzzyMatcher
-import diamondtaco.tcl.lib.Parser
-import diamondtaco.tcl.readWhile
+import io.github.diamondtaco.lib.FuzzyMatcher
+import io.github.diamondtaco.lib.Parser
+import io.github.diamondtaco.readWhile
 import net.minecraft.command.CommandException
 import net.minecraft.item.Item
 import net.minecraft.registry.Registries

@@ -1,8 +1,8 @@
-package diamondtaco.tcl.defualt
+package io.github.diamondtaco.defualt
 
 import com.mojang.brigadier.StringReader
 import com.mojang.brigadier.context.CommandContext
-import diamondtaco.tcl.lib.Parser
+import io.github.diamondtaco.lib.Parser
 import net.minecraft.server.command.ServerCommandSource
 
 

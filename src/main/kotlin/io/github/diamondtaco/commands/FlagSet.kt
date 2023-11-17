@@ -1,4 +1,4 @@
-package diamondtaco.tcl.commands
+package io.github.diamondtaco.commands
 
 data class FlagSet<T>(val toggles: Set<Toggle>, val args: Set<Argument<T>>) {
     fun getToggle(long: String): Boolean = toggles.firstOrNull { it.id.long == long } != null

@@ -1,10 +1,10 @@
-package diamondtaco.tcl
+package io.github.diamondtaco
 
 import com.mojang.brigadier.CommandDispatcher
-import diamondtaco.tcl.commands.Command
-import diamondtaco.tcl.commands.CommandBuilder.Companion.command
-import diamondtaco.tcl.defualt.ItemParser
-import diamondtaco.tcl.lib.toParser
+import io.github.diamondtaco.commands.Command
+import io.github.diamondtaco.commands.CommandBuilder.Companion.command
+import io.github.diamondtaco.defualt.ItemParser
+import io.github.diamondtaco.lib.toParser
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.minecraft.command.EntitySelector

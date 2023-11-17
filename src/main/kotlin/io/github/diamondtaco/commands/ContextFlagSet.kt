@@ -1,9 +1,9 @@
-package diamondtaco.tcl.commands
+package io.github.diamondtaco.commands
 
 import com.mojang.brigadier.context.CommandContext
 
 @Suppress("UNCHECKED_CAST")
-fun CommandContext<*>.toMutableFlagSet(parseAmount: Int): FlagSet<Any> {
+internal fun CommandContext<*>.toMutableFlagSet(parseAmount: Int): FlagSet<Any> {
     val toggles = mutableSetOf<Toggle>()
     val arguments = mutableSetOf<Argument<Any>>()
 

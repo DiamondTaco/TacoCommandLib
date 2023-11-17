@@ -1,4 +1,4 @@
-package diamondtaco.tcl.lib
+package io.github.diamondtaco.lib
 
 class FuzzyMatcher(val strings: Set<String>) {
     @Suppress("ControlFlowWithEmptyBody", "NAME_SHADOWING")

@@ -17,13 +17,13 @@
 	"entrypoints": {
 		"main": [
 			{
-				"value": "diamondtaco.tcl.TacoCommandLib",
+				"value": "io.github.diamondtaco.TacoCommandLib",
 				"adapter": "kotlin"
 			}
 		],
 		"client": [
 			{
-				"value": "diamondtaco.tcl.TacoCommandLibClient",
+				"value": "io.github.diamondtaco.TacoCommandLibClient",
 				"adapter": "kotlin"
 			}
 		]

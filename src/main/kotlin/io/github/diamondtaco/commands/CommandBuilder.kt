@@ -1,8 +1,8 @@
-package diamondtaco.tcl.commands
+package io.github.diamondtaco.commands
 
-import diamondtaco.tcl.commands.CommandBuilder.Companion.command
-import diamondtaco.tcl.defualt.BooleanParser
-import diamondtaco.tcl.lib.Parser
+import io.github.diamondtaco.commands.CommandBuilder.Companion.command
+import io.github.diamondtaco.defualt.BooleanParser
+import io.github.diamondtaco.lib.Parser
 import net.minecraft.server.command.ServerCommandSource
 
 @Api

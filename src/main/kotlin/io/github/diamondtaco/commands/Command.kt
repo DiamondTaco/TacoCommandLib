@@ -1,10 +1,10 @@
-package diamondtaco.tcl.commands
+package io.github.diamondtaco.commands
 
 import com.mojang.brigadier.StringReader
 import com.mojang.brigadier.context.CommandContext
 import com.mojang.brigadier.tree.CommandNode
-import diamondtaco.tcl.lib.MarshalSerializer
-import diamondtaco.tcl.lib.Parser
+import io.github.diamondtaco.lib.MarshalSerializer
+import io.github.diamondtaco.lib.Parser
 import net.fabricmc.fabric.api.command.v2.ArgumentTypeRegistry
 import net.minecraft.server.command.CommandManager.argument
 import net.minecraft.server.command.CommandManager.literal

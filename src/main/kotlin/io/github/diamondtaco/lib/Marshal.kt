@@ -1,4 +1,4 @@
-package diamondtaco.tcl.lib
+package io.github.diamondtaco.lib
 
 import com.google.gson.JsonObject
 import net.minecraft.command.CommandRegistryAccess
