@@ -1,11 +1,15 @@
 package io.github.diamondtaco.commands
 
 data class FlagSet<T>(val toggles: Set<Toggle>, val args: Set<Argument<T>>) {
+    @Api
     fun getToggle(long: String): Boolean = toggles.firstOrNull { it.id.long == long } != null
+    @Api
     fun getToggle(short: Char): Boolean = toggles.firstOrNull { it.id.short == short } != null
+    @Api
     fun getArgument(long: String): Result<T> = args.firstOrNull { it.id.long == long }?.let { Result.success(it.value) }
         ?: Result.failure(Exception("Couldn't find argument $long, or it wasn't supplied."))
 
+    @Api
     fun getArgument(short: Char): Result<T> = args.firstOrNull { it.id.short == short }?.let { Result.success(it.value) }
         ?: Result.failure(Exception("Couldn't find argument $short, or it wasn't supplied."))
 
